@@ -1,0 +1,42 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\Admin;
+use Illuminate\Support\Facades\Hash;
+
+class AuthController extends Controller
+{
+    public function login(Request $request)
+    {
+        $request->validate([
+            'username' => 'required',
+            'password' => 'required',
+        ]);
+
+        $admin = Admin::where('username', $request->username)->first();
+
+        // Перевіряємо пароль.
+        // Оскільки в старій базі використовувався password_verify, 
+        // Hash::check() в Laravel (який використовує bcrypt) підійде.
+        if (!$admin || !Hash::check($request->password, $admin->password_hash)) {
+            return response()->json(['message' => 'Невірний логін або пароль'], 401);
+        }
+
+        // Створюємо токен Sanctum
+        $token = $admin->createToken('admin-token')->plainTextToken;
+
+        return response()->json([
+            'token' => $token,
+            'user' => $admin
+        ]);
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['message' => 'Вихід успішний']);
+    }
+}
