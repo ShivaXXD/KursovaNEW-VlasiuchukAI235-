@@ -1,15 +1,26 @@
-# Етап 1: Збірка Frontend (React)
+# --- Етап 1: Збірка Frontend (React) ---
 FROM node:18 as frontend-build
-WORKDIR /app
+
+# Переходимо в папку фронтенду
+WORKDIR /app/frontend
+
+# Копіюємо package.json та package-lock.json (якщо є)
 COPY frontend/package*.json ./
+
+# Встановлюємо залежності JS
 RUN npm install
+
+# Копіюємо весь код фронтенду
 COPY frontend/ ./
+
+# Збираємо React (створюється папка dist)
 RUN npm run build
 
-# Етап 2: Збірка Backend (Laravel) і фінальний образ
+
+# --- Етап 2: Налаштування Backend (Laravel) ---
 FROM php:8.2-apache
 
-# Встановлюємо системні залежності та розширення PHP
+# Встановлюємо системні бібліотеки, необхідні для Laravel
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
@@ -18,37 +29,45 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     curl \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+    libzip-dev \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
-# Вмикаємо модуль rewrite для Apache (щоб працювали красиві URL Laravel)
+# Вмикаємо модуль mod_rewrite для Apache (щоб працювали красиві URL)
 RUN a2enmod rewrite
 
-# Встановлюємо Composer
+# Встановлюємо Composer (менеджер пакетів PHP)
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Налаштовуємо робочу папку
+# Встановлюємо робочу директорію
 WORKDIR /var/www/html
 
-# Копіюємо файли Laravel (папка backend)
-COPY backend/ .
+# Копіюємо файли Laravel (все з кореня, крім того, що в .dockerignore)
+COPY . .
 
-# Копіюємо зібраний React (з етапу 1) у папку public Laravel
-# Це дозволить Laravel показувати ваш React сайт
-COPY --from=frontend-build /app/dist public/
+# Копіюємо зібраний фронтенд з Етапу 1 у публічну папку Laravel
+# Важливо: Laravel за замовчуванням шукає статичні файли в public
+COPY --from=frontend-build /app/frontend/dist public/assets
+# АБО, якщо Vite збирає в public/build, налаштуйте шлях відповідно. 
+# Якщо у вас Vite, зазвичай достатньо скопіювати вміст dist в public.
+# Але найпростіше - просто скопіювати dist у public, якщо ви налаштували Laravel роздавати index.html з React.
+# ЯКЩО ви використовуєте Laravel тільки як API, а React як окремий SPA:
+# Тоді нам треба просто покласти index.html React-а в public Laravel і налаштувати роут.
+# Припустимо, що React збирається в frontend/dist:
+COPY --from=frontend-build /app/frontend/dist public/
 
-# Встановлюємо залежності PHP
+# Встановлюємо залежності PHP (без dev-залежностей для економії місця)
 RUN composer install --no-interaction --optimize-autoloader --no-dev
 
-# Налаштовуємо права доступу (важливо для Laravel)
+# Налаштовуємо права доступу (Laravel потребує прав на запис у storage)
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Налаштовуємо Apache, щоб він дивився в папку public
+# Налаштування Apache DocumentRoot (вказуємо на папку public)
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf \ /etc/apache2/conf-available/*.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
 # Відкриваємо порт 80
 EXPOSE 80
 
 # Запускаємо Apache
-CMD ["apache2-foreground"]  
+CMD ["apache2-foreground"]
