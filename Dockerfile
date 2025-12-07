@@ -45,6 +45,14 @@ WORKDIR /var/www/html
 COPY . .
 
 # Копіюємо зібраний фронтенд з Етапу 1 у публічну папку Laravel
+# Важливо: Laravel за замовчуванням шукає статичні файли в public
+COPY --from=frontend-build /app/frontend/dist public/assets
+# АБО, якщо Vite збирає в public/build, налаштуйте шлях відповідно. 
+# Якщо у вас Vite, зазвичай достатньо скопіювати вміст dist в public.
+# Але найпростіше - просто скопіювати dist у public, якщо ви налаштували Laravel роздавати index.html з React.
+# ЯКЩО ви використовуєте Laravel тільки як API, а React як окремий SPA:
+# Тоді нам треба просто покласти index.html React-а в public Laravel і налаштувати роут.
+# Припустимо, що React збирається в frontend/dist:
 COPY --from=frontend-build /app/frontend/dist public/
 
 # Встановлюємо залежності PHP (без dev-залежностей для економії місця)
@@ -58,18 +66,8 @@ ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# ============ КРИТИЧНО: Запуск міграцій та seeding ============
-# Копіюємо скрипти ініціалізації
-COPY docker-init.sh /docker-init.sh
-COPY entrypoint.sh /entrypoint.sh
-
-# Даємо права на виконання
-RUN chmod +x /docker-init.sh /entrypoint.sh
-
-# ================================================
-
 # Відкриваємо порт 80
 EXPOSE 80
 
-# Запускаємо наш entrypoint (який спочатку ініціалізує, потім запускає Apache)
-ENTRYPOINT ["/entrypoint.sh"]
+# Запускаємо Apache
+CMD ["apache2-foreground"]
