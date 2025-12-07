@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 
 export default function Portfolio() {
-    // Статичні дані проектів (оскільки бекенду для портфоліо немає)
     const projects = [
         {
             id: 1,

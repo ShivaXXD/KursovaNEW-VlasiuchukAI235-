@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#007BFF', // Синій колір з оригінального сайту
+        primary: '#007BFF', // Синій колір 
         secondary: '#28a745', // Зелений колір кнопок
       }
     },

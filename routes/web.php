@@ -4,10 +4,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Artisan;
 
-// 1. СПОЧАТКУ ставимо службові маршрути (щоб React їх не перекрив)
 
 Route::get('/debug-fix', function () {
-    // Примусово чистимо кеш маршрутів, бо Render міг його запам'ятати
     try {
         Artisan::call('route:clear');
         Artisan::call('config:clear');
@@ -27,7 +25,6 @@ Route::get('/debug-fix', function () {
             if ($file === '.' || $file === '..') continue;
             $output .= "<li>📄 $file";
             
-            // Якщо це папка - заглянемо всередину
             if (is_dir($pathControllers . '/' . $file)) {
                 $output .= " ➡️ <strong>ЦЕ ПАПКА!</strong>";
                 $output .= "<ul>";
@@ -46,7 +43,6 @@ Route::get('/debug-fix', function () {
     return $output;
 });
 
-// 2. І ТІЛЬКИ В КІНЦІ - маршрут для React (catch-all)
 Route::get('/{any?}', function () {
     $path = public_path('index.html');
     if (File::exists($path)) {

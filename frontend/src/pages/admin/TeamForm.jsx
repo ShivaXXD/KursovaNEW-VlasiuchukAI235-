@@ -22,9 +22,6 @@ export default function TeamForm() {
     useEffect(() => {
         if (id) {
             api.get(`/team`).then(res => {
-                // Знаходимо потрібного співробітника в масиві (або можна зробити окремий ендпоінт show в контролері)
-                // Для надійності краще, якщо в TeamController є метод show($id), 
-                // але поки візьмемо зі списку, якщо ви не додавали метод show:
                 const member = res.data.find(m => m.id === parseInt(id));
                 if (member) {
                     setFormData(member);

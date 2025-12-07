@@ -16,7 +16,6 @@ export default function TeamIndex() {
     const handleDelete = async (id) => {
         if (window.confirm('Видалити цього співробітника?')) {
             await api.delete(`/team/${id}`);
-            // Миттєве видалення з екрану
             setTeam(prev => prev.filter(item => item.id !== id));
         }
     };

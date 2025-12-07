@@ -25,7 +25,6 @@ class OrderController extends Controller
         ]);
 
         $order = Order::create($validated);
-        // Тут можна додати відправку Email повідомлення
 
         return response()->json($order, 201);
     }

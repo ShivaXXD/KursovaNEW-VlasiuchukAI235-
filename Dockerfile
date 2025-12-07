@@ -44,15 +44,9 @@ WORKDIR /var/www/html
 # Копіюємо файли Laravel (все з кореня, крім того, що в .dockerignore)
 COPY . .
 
-# Копіюємо зібраний фронтенд з Етапу 1 у публічну папку Laravel
-# Важливо: Laravel за замовчуванням шукає статичні файли в public
+
 COPY --from=frontend-build /app/frontend/dist public/assets
-# АБО, якщо Vite збирає в public/build, налаштуйте шлях відповідно. 
-# Якщо у вас Vite, зазвичай достатньо скопіювати вміст dist в public.
-# Але найпростіше - просто скопіювати dist у public, якщо ви налаштували Laravel роздавати index.html з React.
-# ЯКЩО ви використовуєте Laravel тільки як API, а React як окремий SPA:
-# Тоді нам треба просто покласти index.html React-а в public Laravel і налаштувати роут.
-# Припустимо, що React збирається в frontend/dist:
+
 COPY --from=frontend-build /app/frontend/dist public/
 
 # Встановлюємо залежності PHP (без dev-залежностей для економії місця)

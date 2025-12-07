@@ -25,7 +25,7 @@ class TeamController extends Controller
             'photo_url' => 'required|url',
             'bio_short' => 'required|string',
             'bio_full' => 'required|string',
-            'competencies' => 'required|array', // Важливо: має прийти масив рядків
+            'competencies' => 'required|array', 
         ]);
 
         $member = Team::create($validated);

@@ -32,7 +32,7 @@ class ServiceController extends Controller
             'page_title' => 'required',
             'page_subtitle' => 'required',
             'page_description' => 'required',
-            'page_features' => 'required|array', // Laravel очікує масив
+            'page_features' => 'required|array', 
             'performer_name' => 'required',
             'performer_role' => 'required',
             'performer_photo_url' => 'required|url',

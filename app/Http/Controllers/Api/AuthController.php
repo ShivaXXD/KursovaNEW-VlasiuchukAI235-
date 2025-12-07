@@ -19,8 +19,6 @@ class AuthController extends Controller
         $admin = Admin::where('username', $request->username)->first();
 
         // Перевіряємо пароль.
-        // Оскільки в старій базі використовувався password_verify, 
-        // Hash::check() в Laravel (який використовує bcrypt) підійде.
         if (!$admin || !Hash::check($request->password, $admin->password_hash)) {
             return response()->json(['message' => 'Невірний логін або пароль'], 401);
         }

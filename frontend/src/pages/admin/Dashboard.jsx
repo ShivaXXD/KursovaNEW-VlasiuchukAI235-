@@ -28,7 +28,6 @@ export default function Dashboard() {
     const toggleOrderStatus = async (id) => {
         try {
             await api.patch(`/orders/${id}/toggle`);
-            // Оновлюємо стан локально, не чекаючи fetchData
             setOrders(prevOrders => prevOrders.map(order =>
                 order.id === id ? { ...order, is_processed: !order.is_processed } : order
             ));
@@ -63,7 +62,6 @@ export default function Dashboard() {
         if (window.confirm('Видалити це повідомлення?')) {
             try {
                 await api.delete(`/messages/${id}`);
-                // Миттєве видалення зі стейту
                 setMessages(prev => prev.filter(msg => msg.id !== id));
             } catch (error) {
                 console.error(error);
